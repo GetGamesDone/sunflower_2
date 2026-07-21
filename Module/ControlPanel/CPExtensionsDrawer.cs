@@ -97,7 +97,7 @@ namespace VirtueSky.ControlPanel.Editor
 
         static void OpenGradlePath()
         {
-            var path = $"{AndroidExternalToolsSettings.gradlePath}/";
+            var path = $"{AndroidExternalToolsSettings.Gradle.path}/";
             switch (SystemInfo.operatingSystemFamily)
             {
                 case OperatingSystemFamily.Windows:
