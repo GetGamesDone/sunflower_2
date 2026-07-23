@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace VirtueSky.DataStorage
 {
-    public static class GameData
+    public static class GameDataSecure
     {
         private static bool isInitialized;
         // private static Dictionary<string, byte[]> datas = new();
@@ -92,7 +92,7 @@ namespace VirtueSky.DataStorage
                 default: _storage.SetObject(key, data); break;
             }
         }
-        
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool HasKey(string key) => _storage.ContainsKey(key);
 

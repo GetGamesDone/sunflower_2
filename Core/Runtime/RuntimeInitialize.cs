@@ -20,8 +20,15 @@ namespace VirtueSky.Core
 
         private static void InitBinding()
         {
-            var normalDataService = new PlayerPrefStorage(new NewtonsoftJsonService());
-            GameData.Init(normalDataService);
+            var jsonService = new NewtonsoftJsonService();
+            var normalDataService = new PlayerPrefStorage(jsonService);
+            #if !UNITY_EDITOR
+            var secureDataService = new SecureStorage(jsonService);
+            #else
+            var secureDataService = new SecureStorageUtil(jsonService);
+            #endif
+            GameData.Init(normalDataService, jsonService);
+            GameDataSecure.Init(secureDataService, jsonService);
         }
     }
 }
