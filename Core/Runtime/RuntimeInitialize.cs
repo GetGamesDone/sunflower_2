@@ -15,7 +15,13 @@ namespace VirtueSky.Core
             App.InitMonoGlobalComponent(app.AddComponent<MonoGlobal>());
             IsInitializedMonoGlobal = true;
             Object.DontDestroyOnLoad(app);
-            GameData.Init();
+            InitBinding();
+        }
+
+        private static void InitBinding()
+        {
+            var normalDataService = new PlayerPrefStorage(new NewtonsoftJsonService());
+            GameData.Init(normalDataService);
         }
     }
 }

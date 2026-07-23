@@ -13,7 +13,6 @@ namespace VirtueSky.DataStorage
         public static void ClearAllData()
         {
             GameData.DeleteAll();
-            GameData.DeleteFileData();
             PlayerPrefs.DeleteAll();
             Debug.Log($"<color=Green>Clear all data succeed</color>");
         }
@@ -29,41 +28,40 @@ namespace VirtueSky.DataStorage
         public static void ClearDataPath()
         {
             GameData.DeleteAll();
-            GameData.DeleteFileData();
             Debug.Log($"<color=Green>Clear path data succeed</color>");
         }
 
 
-        [MenuItem("Sunflower2/Open Path Data", priority = 503)]
-        public static void OpenPathData()
-        {
-            string path = GameData.GetPersistentDataPath();
-            switch (SystemInfo.operatingSystemFamily)
-            {
-                case OperatingSystemFamily.Windows:
-                    if (Directory.Exists(path))
-                    {
-                        Process.Start(path);
-                    }
-                    else
-                    {
-                        Debug.LogError("The directory does not exist: " + path);
-                    }
-
-                    break;
-                case OperatingSystemFamily.MacOSX:
-                    if (Directory.Exists(path))
-                    {
-                        Process.Start("open", path);
-                    }
-                    else
-                    {
-                        Debug.LogError("The directory does not exist: " + path);
-                    }
-
-                    break;
-            }
-        }
+        // [MenuItem("Sunflower2/Open Path Data", priority = 503)]
+        // public static void OpenPathData()
+        // {
+        //     string path = GameData.GetPersistentDataPath();
+        //     switch (SystemInfo.operatingSystemFamily)
+        //     {
+        //         case OperatingSystemFamily.Windows:
+        //             if (Directory.Exists(path))
+        //             {
+        //                 Process.Start(path);
+        //             }
+        //             else
+        //             {
+        //                 Debug.LogError("The directory does not exist: " + path);
+        //             }
+        //
+        //             break;
+        //         case OperatingSystemFamily.MacOSX:
+        //             if (Directory.Exists(path))
+        //             {
+        //                 Process.Start("open", path);
+        //             }
+        //             else
+        //             {
+        //                 Debug.LogError("The directory does not exist: " + path);
+        //             }
+        //
+        //             break;
+        //     }
+        // }
     }
 #endif
 }
