@@ -19,7 +19,7 @@ namespace VirtueSky.Ads
             Placement = info.Placement;
             AdNetwork = info.NetworkName;
             Revenue = info.Revenue;
-            AdMediation = Ads.AdMediation.AppLovin.ToString();
+            AdMediation = nameof(Ads.AdMediation.AppLovin);
             Precision = info.RevenuePrecision;
             AuctionId = "";
         }
@@ -108,7 +108,7 @@ namespace VirtueSky.Ads
         {
             ErrorCode = (int)info.Code;
             ErrorMessage = info.Message;
-            AdMediation = Ads.AdMediation.AppLovin.ToString();
+            AdMediation = nameof(Ads.AdMediation.AppLovin);
         }
 #endif
 
@@ -126,7 +126,7 @@ namespace VirtueSky.Ads
         {
             ErrorCode = adError.GetCode();
             ErrorMessage = adError.GetMessage();
-            AdMediation = Ads.AdMediation.Admob.ToString();
+            AdMediation = nameof(Ads.AdMediation.Admob);
         }
 #endif
         public AdsError(int errorCode, string errorMessage, string adMediation)

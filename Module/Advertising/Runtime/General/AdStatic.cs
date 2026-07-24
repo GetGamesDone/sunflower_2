@@ -39,8 +39,8 @@ namespace VirtueSky.Ads
 
         public static bool IsRemoveAd
         {
-            get => GameData.Get($"{Application.identifier}_removeads", false);
-            set => GameData.Set($"{Application.identifier}_removeads", value);
+            get => GameDataSecure.Get($"{Application.identifier}_remove_ads", false);
+            set => GameDataSecure.Set($"{Application.identifier}_remove_ads", value);
         }
 
         public static DateTime AdClosingTime { get; internal set; }
