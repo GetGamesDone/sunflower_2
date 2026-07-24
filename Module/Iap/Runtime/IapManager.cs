@@ -241,11 +241,11 @@ namespace VirtueSky.Iap
 
         private void PurchaseProductInternal(IapDataProduct product)
         {
-#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
+// #if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
             _storeController?.PurchaseProduct(product.Id);
-#elif UNITY_EDITOR
-            InternalPurchaseSuccess(product.Id);
-#endif
+// #elif UNITY_EDITOR
+//             InternalPurchaseSuccess(product.Id);
+// #endif
         }
 
         private void RequestProductData()
