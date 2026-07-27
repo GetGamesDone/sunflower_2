@@ -1,6 +1,7 @@
 ﻿#if UNITY_EDITOR
 using System.Linq;
 using UnityEditor;
+using UnityEditor.Build;
 
 namespace VirtueSky.UtilsEditor
 {
@@ -327,21 +328,21 @@ namespace VirtueSky.UtilsEditor
 
         public static void SwitchFlag(string flag)
         {
-            PlayerSettings.GetScriptingDefineSymbolsForGroup(
-                EditorUserBuildSettings.selectedBuildTargetGroup,
+            PlayerSettings.GetScriptingDefineSymbols(
+                NamedBuildTarget.FromBuildTargetGroup(EditorUserBuildSettings.selectedBuildTargetGroup),
                 out var defines);
             var enabled = defines.Contains(flag);
             defines = enabled
                 ? defines.Where(value => value != flag).ToArray()
                 : defines.Append(flag).ToArray();
-            PlayerSettings.SetScriptingDefineSymbolsForGroup(
-                EditorUserBuildSettings.selectedBuildTargetGroup, defines);
+            PlayerSettings.SetScriptingDefineSymbols(
+                NamedBuildTarget.FromBuildTargetGroup(EditorUserBuildSettings.selectedBuildTargetGroup), defines);
         }
 
         public static bool IsFlagEnabled(string flag)
         {
-            PlayerSettings.GetScriptingDefineSymbolsForGroup(
-                EditorUserBuildSettings.selectedBuildTargetGroup,
+            PlayerSettings.GetScriptingDefineSymbols(
+                NamedBuildTarget.FromBuildTargetGroup(EditorUserBuildSettings.selectedBuildTargetGroup),
                 out var defines);
             return defines.Contains(flag);
         }

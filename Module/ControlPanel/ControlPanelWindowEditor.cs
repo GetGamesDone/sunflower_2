@@ -91,7 +91,7 @@ namespace VirtueSky.ControlPanel.Editor
             DrawButtonChooseState("Scripting Define Symbols", StatePanelControl.ScriptDefineSymbols);
             DrawButtonChooseState("Register Package", StatePanelControl.RegisterPackage);
             DrawButtonChooseState("Extensions", StatePanelControl.Extensions);
-            DrawButtonChooseState("About", StatePanelControl.About);
+            // DrawButtonChooseState("About", StatePanelControl.About);
         }
 
         void DrawContent()
@@ -149,9 +149,9 @@ namespace VirtueSky.ControlPanel.Editor
                 case StatePanelControl.Extensions:
                     CPExtensionsDrawer.OnDrawExtensions(position);
                     break;
-                case StatePanelControl.About:
-                    CPAboutDrawer.OnDrawAbout(position);
-                    break;
+                // case StatePanelControl.About:
+                //     CPAboutDrawer.OnDrawAbout(position);
+                //     break;
             }
         }
 
