@@ -9,9 +9,93 @@ using VirtueSky.Misc;
 namespace VirtueSky.DataType
 {
     [Serializable]
+    [DeclareHorizontalGroup("dictionaryCustomNewEntry")]
     public class DictionaryCustom<TKey, TValue> : ISerializationCallbackReceiver, IDictionary, IDictionary<TKey, TValue>
     {
-        [TableList, SerializeField] private List<DictionaryCustomData<TKey, TValue>> dictionaryData = new List<DictionaryCustomData<TKey, TValue>>();
+        [TableList(HideAddButton = true), ValidateInput(nameof(ValidateUniqueKeys)), SerializeField]
+        private List<DictionaryCustomData<TKey, TValue>> dictionaryData = new List<DictionaryCustomData<TKey, TValue>>();
+
+        [Group("dictionaryCustomNewEntry"), LabelText("Key"), SerializeField]
+        private TKey newEntryKey;
+
+        [Group("dictionaryCustomNewEntry"), LabelText("Value"), SerializeField]
+        private TValue newEntryValue;
+
+        [Button("Add"), DisableIf(nameof(CannotAddNewEntry))]
+        [InfoBox("Key already exists", TriMessageType.Error, nameof(IsNewEntryKeyDuplicate))]
+        [InfoBox("$" + nameof(NewEntryValueError), TriMessageType.Error, nameof(HasNewEntryValueError))]
+        private void AddNewEntry()
+        {
+            if (CannotAddNewEntry()) return;
+
+            dictionaryData.Add(new DictionaryCustomData<TKey, TValue>(newEntryKey, newEntryValue));
+            UpdateDict();
+
+            newEntryKey = default;
+            newEntryValue = default;
+        }
+
+        private bool CannotAddNewEntry()
+        {
+            if (!typeof(TKey).IsValueType && newEntryKey == null) return true;
+            if (IsNewEntryKeyDuplicate()) return true;
+
+            return HasNewEntryValueError();
+        }
+
+        private bool IsNewEntryKeyDuplicate()
+        {
+            if (dictionaryData == null) return false;
+
+            foreach (var data in dictionaryData)
+            {
+                if (data.key != null && EqualityComparer<TKey>.Default.Equals(data.key, newEntryKey))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private bool HasNewEntryValueError() => !IsValueAllowed(newEntryValue, out _);
+
+        private string NewEntryValueError()
+        {
+            IsValueAllowed(newEntryValue, out var error);
+            return error ?? string.Empty;
+        }
+
+        // Null passes here since the value field is optional; subclasses only need to reject non-null bad values.
+        protected virtual bool IsValueAllowed(TValue value, out string error)
+        {
+            error = null;
+            return true;
+        }
+
+        private TriValidationResult ValidateUniqueKeys()
+        {
+            if (dictionaryData == null || dictionaryData.Count < 2) return TriValidationResult.Valid;
+
+            var seenKeys = new HashSet<TKey>();
+            var duplicateKeys = new HashSet<TKey>();
+
+            foreach (var data in dictionaryData)
+            {
+                if (data.key == null) continue;
+                if (!seenKeys.Add(data.key))
+                {
+                    duplicateKeys.Add(data.key);
+                }
+            }
+
+            if (duplicateKeys.Count > 0)
+            {
+                return TriValidationResult.Error($"Duplicate key(s) not allowed: {string.Join(", ", duplicateKeys)}");
+            }
+
+            return TriValidationResult.Valid;
+        }
 
         [NonSerialized] private Dictionary<TKey, TValue> m_dict = new Dictionary<TKey, TValue>();
         public Dictionary<TKey, TValue> GetDict => m_dict;
@@ -38,10 +122,21 @@ namespace VirtueSky.DataType
 
                 foreach (var data in dictionaryData)
                 {
-                    if (data.key != null && data.value != null)
+                    if (data.key == null || data.value == null) continue;
+
+                    if (m_dict.ContainsKey(data.key))
                     {
-                        m_dict[data.key] = data.value;
+                        Debug.LogError($"[DictionaryCustom] Duplicate key '{data.key}' ignored.");
+                        continue;
                     }
+
+                    if (!IsValueAllowed(data.value, out var error))
+                    {
+                        Debug.LogError($"[DictionaryCustom] Invalid value for key '{data.key}': {error}");
+                        continue;
+                    }
+
+                    m_dict[data.key] = data.value;
                 }
             }
         }
