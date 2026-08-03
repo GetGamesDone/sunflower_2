@@ -14,13 +14,17 @@ namespace VirtueSky.Ads
     public class AdmobRewardAdUnit : AdUnit
     {
         public bool useTestId;
+        public bool usePreload;
+        [UnityEngine.Min(0)] public int preloadBufferSize = 2;
         [NonSerialized] internal Action completedCallback;
         [NonSerialized] internal Action skippedCallback;
         [NonSerialized] internal Action receivedRewardCallback;
 
 #if VIRTUESKY_ADS && VIRTUESKY_ADMOB
         private RewardedAd _rewardedAd;
+        private RewardedAd _preloadedRewardedAd;
         private ResponseInfo adsInfo = null;
+        private bool isPreloadStarted;
 #endif
         private const float FinalizeCloseDelay = 0.2f;
         private DelayHandle _finalizeCloseHandle;
@@ -48,7 +52,14 @@ namespace VirtueSky.Ads
         {
 #if VIRTUESKY_ADS && VIRTUESKY_ADMOB
             if (string.IsNullOrEmpty(Id)) return;
-            Destroy();
+
+            if (usePreload)
+            {
+                StartPreload();
+                return;
+            }
+
+            DestroyLoadedAd();
             IsLoading = true;
             VLog.Log($"Advertising: Load RewardedAd: {Id}");
             OnRequestAdEvent?.Invoke();
@@ -59,6 +70,11 @@ namespace VirtueSky.Ads
         public override bool IsReady()
         {
 #if VIRTUESKY_ADS && VIRTUESKY_ADMOB
+            if (usePreload)
+            {
+                return RewardedAdPreloader.IsAdAvailable(Id);
+            }
+
             return _rewardedAd != null && _rewardedAd.CanShowAd();
 #else
             return false;
@@ -73,6 +89,28 @@ namespace VirtueSky.Ads
                 cacheAdInfo.Placement = placement;
             }
 #if VIRTUESKY_ADS && VIRTUESKY_ADMOB
+            if (usePreload)
+            {
+                _preloadedRewardedAd = RewardedAdPreloader.DequeueAd(Id);
+                if (_preloadedRewardedAd == null)
+                {
+                    VLog.LogWarning($"Advertising: RewardedAd preload dequeue failed, ad is not ready: {Id}");
+                    return;
+                }
+
+                adsInfo = _preloadedRewardedAd.GetResponseInfo();
+                BindAdEvents(_preloadedRewardedAd);
+                CacheAdsInfo();
+                if (cacheAdInfo != null)
+                {
+                    cacheAdInfo.Placement = placement;
+                }
+
+                VLog.Log($"Advertising: RewardedAd show: {Id}");
+                _preloadedRewardedAd.Show(UserRewardEarnedCallback);
+                return;
+            }
+
             VLog.Log($"Advertising: RewardedAd show: {Id}");
             _rewardedAd.Show(UserRewardEarnedCallback);
 #endif
@@ -99,14 +137,37 @@ namespace VirtueSky.Ads
         public override void Destroy()
         {
 #if VIRTUESKY_ADS && VIRTUESKY_ADMOB
-            if (_rewardedAd == null) return;
-            _rewardedAd.Destroy();
-            _rewardedAd = null;
-            IsEarnRewarded = false;
+            if (usePreload)
+            {
+                DestroyPreloadedAd();
+                return;
+            }
+
+            DestroyLoadedAd();
 #endif
             IsLoading = false;
             IsShowing = false;
         }
+
+#if VIRTUESKY_ADS && VIRTUESKY_ADMOB
+        private void DestroyLoadedAd()
+        {
+            if (_rewardedAd == null) return;
+            _rewardedAd.Destroy();
+            _rewardedAd = null;
+            IsEarnRewarded = false;
+        }
+
+        private void DestroyPreloadedAd()
+        {
+            IsLoading = false;
+            IsShowing = false;
+            if (_preloadedRewardedAd == null) return;
+            _preloadedRewardedAd.Destroy();
+            _preloadedRewardedAd = null;
+            IsEarnRewarded = false;
+        }
+#endif
 
         private void ResetFinalizeCloseHandle()
         {
@@ -117,6 +178,60 @@ namespace VirtueSky.Ads
         #region Fun Callback
 
 #if VIRTUESKY_ADS && VIRTUESKY_ADMOB
+        private void StartPreload()
+        {
+            if (isPreloadStarted) return;
+
+            isPreloadStarted = true;
+            IsLoading = true;
+            VLog.Log($"Advertising: Preload RewardedAd: {Id}");
+            OnRequestAdEvent?.Invoke();
+
+            var config = new PreloadConfiguration
+            {
+                AdUnitId = Id,
+                Request = new AdRequest(),
+                BufferSize = (uint)Math.Max(1, preloadBufferSize)
+            };
+
+            try
+            {
+                bool preloadStarted = RewardedAdPreloader.Preload(
+                    Id,
+                    config,
+                    onAdPreloaded: (adUnitId, responseInfo) =>
+                    {
+                        VLog.Log($"Advertising: RewardedAd Preload callback loaded: {adUnitId}");
+                        adsInfo = responseInfo;
+                        CacheAdsInfo();
+                        OnAdLoaded();
+                    },
+                    onAdFailedToPreload: (adUnitId, error) =>
+                    {
+                        VLog.LogWarning($"Advertising: RewardedAd Preload callback failed: {adUnitId}");
+                        OnAdFailedToLoad(error);
+                    },
+                    onAdsExhausted: adUnitId =>
+                    {
+                        VLog.LogWarning($"Advertising: RewardedAd preload exhausted: {adUnitId}");
+                    }
+                );
+
+                VLog.Log($"Advertising: RewardedAd Preload started: {preloadStarted}, adUnitId: {Id}, bufferSize: {config.BufferSize}");
+                if (!preloadStarted)
+                {
+                    isPreloadStarted = false;
+                    IsLoading = false;
+                }
+            }
+            catch (Exception e)
+            {
+                isPreloadStarted = false;
+                IsLoading = false;
+                VLog.LogWarning($"Advertising: RewardedAd Preload exception: {Id}, {e}");
+            }
+        }
+
         private void AdLoadCallback(RewardedAd ad, LoadAdError error)
         {
             // if error is not null, the load request failed.
@@ -128,13 +243,18 @@ namespace VirtueSky.Ads
 
             _rewardedAd = ad;
             adsInfo = ad.GetResponseInfo();
-            _rewardedAd.OnAdFullScreenContentClosed += OnAdClosed;
-            _rewardedAd.OnAdFullScreenContentFailed += OnAdFailedToShow;
-            _rewardedAd.OnAdFullScreenContentOpened += OnAdOpening;
-            _rewardedAd.OnAdPaid += OnAdPaided;
-            _rewardedAd.OnAdClicked += OnAdClicked;
+            BindAdEvents(_rewardedAd);
             CacheAdsInfo();
             OnAdLoaded();
+        }
+
+        private void BindAdEvents(RewardedAd ad)
+        {
+            ad.OnAdFullScreenContentClosed += OnAdClosed;
+            ad.OnAdFullScreenContentFailed += OnAdFailedToShow;
+            ad.OnAdFullScreenContentOpened += OnAdOpening;
+            ad.OnAdPaid += OnAdPaided;
+            ad.OnAdClicked += OnAdClicked;
         }
 
         private void CacheAdsInfo()
@@ -188,7 +308,7 @@ namespace VirtueSky.Ads
             });
 
             Destroy();
-            Load();
+            if (!usePreload) Load();
         }
 
         private void OnAdClosed()
@@ -215,9 +335,15 @@ namespace VirtueSky.Ads
             });
         }
 
-        private void OnAdFailedToLoad(LoadAdError error)
+        private void OnAdFailedToLoad(AdError error)
         {
             IsLoading = false;
+            if (error == null)
+            {
+                VLog.LogWarning($"Advertising: RewardedAd FailedToLoad: {Id}, error is null");
+                return;
+            }
+
             var errorInfo = new AdsError(error);
             VLog.LogWarning($"Advertising: RewardedAd FailedToLoad: {Id}, errorCode: {errorInfo.ErrorCode}, errorMessage: {errorInfo.ErrorMessage}");
             ExcuteCallbackOnMainThread(() =>
@@ -242,14 +368,14 @@ namespace VirtueSky.Ads
                 IsEarnRewarded = false;
                 ResetFinalizeCloseHandle();
                 Destroy();
-                Load();
+                if (!usePreload) Load();
                 return;
             }
 
             ExcuteCallbackOnMainThread(() => { Common.CallActionAndClean(ref skippedCallback); });
             ResetFinalizeCloseHandle();
             Destroy();
-            Load();
+            if (!usePreload) Load();
         }
 #endif
 
