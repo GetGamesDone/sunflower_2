@@ -10,6 +10,7 @@ namespace VirtueSky.Tracking
         public static Action OnTracked;
         public static bool autoTrackAdImpressionAdmob;
 
+        /// <summary>Unused as of the ad_impression tracking consolidation (see VirtueSky.Tracking.Trackings.AdImpression, which now owns Firebase's ad_impression logging at the app level) - kept only because autoTrackAdImpressionAdmob is still written by AdmobClient.cs. Not deleted since other projects sharing this framework module may still call it directly.</summary>
         public static void FirebaseAnalyticTrackRevenue(double value, string network, string unitId,
             string format, string currentAdMediation)
         {
@@ -31,12 +32,12 @@ namespace VirtueSky.Tracking
 
             Parameter[] parameters =
             {
-                new("value", value),
-                new("ad_platform", ad_platform),
                 new("ad_format", format),
+                new("ad_platform", ad_platform),
+                new("ad_source", network),
+                new("ad_unit_name", unitId),
+                new("value", value),
                 new("currency", "USD"),
-                new("ad_unit_id", unitId),
-                new("ad_source", network)
             };
 
             FirebaseAnalytics.LogEvent("ad_impression", parameters);

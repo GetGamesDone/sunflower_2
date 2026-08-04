@@ -102,8 +102,6 @@ namespace VirtueSky.Ads
         protected void TrackRevenue(AdsInfo info)
         {
             if (!AdSettings.EnableTrackAdRevenue) return;
-            FirebaseAnalyticTrackingRevenue.FirebaseAnalyticTrackRevenue(info.Revenue, info.AdNetwork, info.AdUnitId, info.AdFormat,
-                info.AdMediation);
             AdjustTrackingRevenue.AdjustTrackRevenue(info.Revenue, info.AdNetwork, info.AdUnitId, info.AdFormat, info.AdMediation);
             AppsFlyerTrackingRevenue.AppsFlyerTrackRevenueAd(info.Revenue, info.AdNetwork, info.AdUnitId, info.AdFormat, info.AdMediation);
         }
