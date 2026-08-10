@@ -12,7 +12,7 @@ namespace VirtueSky.DataType
     [DeclareHorizontalGroup("dictionaryCustomNewEntry")]
     public class DictionaryCustom<TKey, TValue> : ISerializationCallbackReceiver, IDictionary, IDictionary<TKey, TValue>
     {
-        [TableList(HideAddButton = true), ValidateInput(nameof(ValidateUniqueKeys)), SerializeField]
+        [PaginatedList, ValidateInput(nameof(ValidateUniqueKeys)), SerializeField]
         private List<DictionaryCustomData<TKey, TValue>> dictionaryData = new List<DictionaryCustomData<TKey, TValue>>();
 
         [Group("dictionaryCustomNewEntry"), LabelText("Key"), SerializeField]
