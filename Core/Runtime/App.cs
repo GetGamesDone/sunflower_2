@@ -199,6 +199,42 @@ namespace VirtueSky.Core
 
         #endregion
 
+        #region SecondTick
+
+        private const float SecondTickInterval = 1f;
+        private static DelayHandle _secondTickHandle;
+        private static event Action OnSecondTick;
+
+        /// <summary>Single shared 1-second heartbeat, backed by one looped DelayHandle, so any
+        /// number of subscribers (e.g. multiple live-ops-style periodic checks) stay tick-aligned
+        /// with each other instead of each starting its own App.Delay(isLooped: true) timer at a
+        /// different moment and drifting out of sync.</summary>
+        public static void SubSecondTick(Action callback)
+        {
+            if (callback == null) return;
+
+            if (_secondTickHandle == null)
+            {
+                _secondTickHandle = Delay(SecondTickInterval, RaiseSecondTick, isLooped: true, useRealTime: true);
+            }
+
+            OnSecondTick += callback;
+        }
+
+        public static void UnsubSecondTick(Action callback)
+        {
+            if (callback == null) return;
+
+            OnSecondTick -= callback;
+        }
+
+        private static void RaiseSecondTick()
+        {
+            OnSecondTick?.Invoke();
+        }
+
+        #endregion
+
         #region Effective
 
         [System.Runtime.CompilerServices.MethodImpl(
