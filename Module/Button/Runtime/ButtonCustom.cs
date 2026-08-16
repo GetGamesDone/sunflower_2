@@ -53,6 +53,11 @@ namespace VirtueSky.UIButton
         public override void OnPointerDown(PointerEventData eventData)
         {
             base.OnPointerDown(eventData);
+            // Not clickable - skip the punch-scale motion and sfx too, instead of playing them for a
+            // press that can't actually trigger onClick. IsInteractable() (not just the interactable
+            // field) also accounts for a disabled parent CanvasGroup.
+            if (!IsInteractable()) return;
+
             DoScale();
             if (invokeClickButton)
             {
@@ -75,6 +80,7 @@ namespace VirtueSky.UIButton
         public override void OnPointerExit(PointerEventData eventData)
         {
             base.OnPointerExit(eventData);
+            if (!IsInteractable()) return;
             Shrug();
         }
 
