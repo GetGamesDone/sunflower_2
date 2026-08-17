@@ -24,6 +24,7 @@ namespace VirtueSky.UIButton
         [SerializeField] private Ease easingTypes = Ease.OutQuint;
 
         [SerializeField] private float scale = 0.9f;
+        [SerializeField] private float timeScale = 0.15f;
         [SerializeField] private bool isShrugOver;
         [SerializeField] private float timeShrug = .2f;
         [SerializeField] private float strength = .2f;
@@ -46,7 +47,7 @@ namespace VirtueSky.UIButton
         protected override void OnDisable()
         {
             base.OnDisable();
-            ResetScale();
+            SnapScale();
         }
 
 
@@ -86,10 +87,15 @@ namespace VirtueSky.UIButton
 
         void DoScale()
         {
-            if (isMotion)
-            {
-                _tweenHandle = Tween.Create(originScale, originScale * scale, 0.15f).WithEase(easingTypes).BindToLocalScale(transform);
-            }
+            if (!isMotion) return;
+
+            // Cancel (not Complete) any tween still running from a previous fast tap - Cancel just
+            // stops it in place instead of snapping to its end value first, and starting the new
+            // tween from the current localScale (not always originScale) keeps the motion
+            // continuous instead of jumping, which is what was causing the jitter.
+            if (_tweenHandle.IsActive) _tweenHandle.Cancel();
+
+            _tweenHandle = Tween.Create(transform.localScale, originScale * scale, timeScale).WithEase(easingTypes).BindToLocalScale(transform);
         }
 
         void Shrug()
@@ -104,17 +110,28 @@ namespace VirtueSky.UIButton
             }
         }
 
+        // Animates back to originScale from wherever the press tween currently is - Cancel (not
+        // Complete) so a fast tap/release doesn't force a snap to the pressed scale first, which
+        // read as a jerky double-motion. Tweening from the live transform.localScale keeps this
+        // continuous with whatever the press animation was doing when it got interrupted.
         void ResetScale()
         {
-            if (isMotion)
-            {
-                if (_tweenHandle.IsActive)
-                {
-                    _tweenHandle.Complete();
-                }
+            if (!isMotion) return;
 
-                transform.localScale = originScale;
-            }
+            if (_tweenHandle.IsActive) _tweenHandle.Cancel();
+
+            _tweenHandle = Tween.Create(transform.localScale, originScale, timeScale).WithEase(easingTypes).BindToLocalScale(transform);
+        }
+
+        // Instant, non-animated reset used when the button is being disabled - the object may be
+        // hidden/destroyed right after, so it must not be left mid-tween (see OnDisable).
+        void SnapScale()
+        {
+            if (!isMotion) return;
+
+            if (_tweenHandle.IsActive) _tweenHandle.Cancel();
+
+            transform.localScale = originScale;
         }
     }
 }
