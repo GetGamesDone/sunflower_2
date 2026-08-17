@@ -35,6 +35,14 @@ namespace VirtueSky.Inspector.Drawers
         private class PaginatedListElement : TriElement
         {
             private const float RowSpacing = 2f;
+
+            /// <summary>Vertical gap between dictionary entries inside the box, plus room for the
+            /// divider line drawn at its midpoint (see DrawRows) - wider than RowSpacing/
+            /// EditorGUIUtility.standardVerticalSpacing (~2px) so consecutive entries read as clearly
+            /// separate rows instead of running together, especially once each row's value gets tall
+            /// (nested fields, multi-line content).</summary>
+            private const float RowGap = 10f;
+
             private const float ButtonWidth = 24f;
             private const float PageFieldWidth = 40f;
             private const float TotalLabelWidth = 40f;
@@ -44,6 +52,14 @@ namespace VirtueSky.Inspector.Drawers
             private const float BoxInsetBottom = 4f;
             private const float BoxInsetLeft = 4f;
             private const float BoxInsetRight = 4f;
+
+            private static Color RowDividerColor =>
+                EditorGUIUtility.isProSkin ? new Color(1f, 1f, 1f, 0.12f) : new Color(0f, 0f, 0f, 0.15f);
+
+            /// <summary>Odd rows (index 1, 3, ...) get this tint over the box's own background;
+            /// even rows are left untinted so the two alternate - see DrawRows.</summary>
+            private static Color RowAlternateBackground =>
+                EditorGUIUtility.isProSkin ? new Color(1f, 1f, 1f, 0.05f) : new Color(0f, 0f, 0f, 0.035f);
 
             private readonly TriProperty _property;
             private readonly int _pageSize;
@@ -134,7 +150,24 @@ namespace VirtueSky.Inspector.Drawers
             private float GetBoxContentHeight(float width)
             {
                 var innerWidth = width - BoxInsetLeft - BoxInsetRight;
-                return EditorGUIUtility.singleLineHeight + RowSpacing + base.GetHeight(innerWidth);
+                return EditorGUIUtility.singleLineHeight + RowSpacing + GetRowsHeight(innerWidth);
+            }
+
+            /// <summary>Sum of every row's own height plus RowGap between consecutive rows - not
+            /// base.GetHeight (which spaces children by the much tighter
+            /// EditorGUIUtility.standardVerticalSpacing) since DrawRows below lays them out with
+            /// RowGap to match.</summary>
+            private float GetRowsHeight(float width)
+            {
+                if (ChildrenCount == 0) return 0f;
+
+                var height = (ChildrenCount - 1) * RowGap;
+                for (var i = 0; i < ChildrenCount; i++)
+                {
+                    height += GetChild(i).GetHeight(width);
+                }
+
+                return height;
             }
 
             public override void OnGUI(Rect position)
@@ -173,7 +206,45 @@ namespace VirtueSky.Inspector.Drawers
                 // offset/length keep their own labels, same as the old table did).
                 using (TriPropertyOverrideContext.BeginOverride(_overrideContext))
                 {
-                    base.OnGUI(bodyRect);
+                    DrawRows(bodyRect);
+                }
+            }
+
+            /// <summary>Lays out each row RowGap apart (instead of base.OnGUI's much tighter
+            /// EditorGUIUtility.standardVerticalSpacing), painting a full-bleed alternating-tint
+            /// panel behind every odd row and a divider line at the midpoint of every gap - together
+            /// that reads as a continuous strip of distinct row panels (each owning half of the gap
+            /// on either side of it) split by the divider, rather than just text rows with space
+            /// between them.</summary>
+            private void DrawRows(Rect position)
+            {
+                var offset = 0f;
+
+                for (var i = 0; i < ChildrenCount; i++)
+                {
+                    var child = GetChild(i);
+                    var childHeight = child.GetHeight(position.width);
+
+                    var panelTop = offset - (i > 0 ? RowGap * 0.5f : 0f);
+                    var panelBottom = offset + childHeight + (i < ChildrenCount - 1 ? RowGap * 0.5f : 0f);
+
+                    if (i % 2 == 1)
+                    {
+                        var panelRect = new Rect(position.x, position.y + panelTop, position.width,
+                            panelBottom - panelTop);
+                        EditorGUI.DrawRect(panelRect, RowAlternateBackground);
+                    }
+
+                    child.OnGUI(new Rect(position.x, position.y + offset, position.width, childHeight));
+                    offset += childHeight;
+
+                    if (i < ChildrenCount - 1)
+                    {
+                        var lineRect = new Rect(position.x, position.y + offset + RowGap * 0.5f - 0.5f,
+                            position.width, 1f);
+                        EditorGUI.DrawRect(lineRect, RowDividerColor);
+                        offset += RowGap;
+                    }
                 }
             }
 
