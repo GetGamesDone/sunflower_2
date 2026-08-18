@@ -1185,6 +1185,9 @@ namespace Sabresaurus.UnityPrefsEditor
 
                     // Record the version of the file we just read, so we know if it changes in the future
                     lastDeserialization = lastWriteTime;
+
+                    // Refresh the search results so an active search reflects the newly loaded data
+                    UpdateSearch();
                 }
 
                 if (lastWriteTime != MISSING_DATETIME)
@@ -1206,6 +1209,9 @@ namespace Sabresaurus.UnityPrefsEditor
 
                     // Record the latest time, so we don't fetch again too quickly
                     lastDeserialization = DateTime.UtcNow;
+
+                    // Refresh the search results so an active search reflects the newly loaded data
+                    UpdateSearch();
                 }
             }
         }
