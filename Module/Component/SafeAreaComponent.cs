@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using VirtueSky.Core;
 using VirtueSky.Inspector;
@@ -12,6 +13,7 @@ namespace VirtueSky.Component
     ///  (3) For other cases that use a mixture of full horizontal and vertical background stripes, use the Conform X & Y controls on separate elements as needed.
     /// </summary>
     [HideMonoScript]
+    [ExecuteAlways]
     [EditorIcon("icon_csharp")]
     public class SafeAreaComponent : BaseMono
     {
@@ -132,6 +134,13 @@ namespace VirtueSky.Component
 
             Refresh();
         }
+
+#if UNITY_EDITOR
+        private void Update()
+        {
+            Refresh();
+        }
+#endif
 
         public override void Tick()
         {
