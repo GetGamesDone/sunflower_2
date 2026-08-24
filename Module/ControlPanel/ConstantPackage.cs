@@ -76,6 +76,11 @@
         public const string MaxVersionFirebaseCrashlytics =
             "https://github.com/RageAgainstThePixel/com.google.firebase.crashlytics.git#13.11.0";
 
+        public const string PackageNameFirebaseFirestore = "com.google.firebase.firestore";
+
+        public const string MaxVersionFirebaseFirestore =
+            "https://github.com/RageAgainstThePixel/com.google.firebase.firestore.git#13.11.0";
+
         #endregion
 
         public const string PackageNameAdjust = "com.adjust.sdk";
