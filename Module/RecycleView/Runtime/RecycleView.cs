@@ -183,7 +183,7 @@ namespace VirtueSky.RecycleView
         {
             _offsets.Clear();
             var count = Count;
-            var cursor = direction == RecycleViewDirection.Vertical ? padding.top : padding.left;
+            float cursor = direction == RecycleViewDirection.Vertical ? padding.top : padding.left;
 
             for (var i = 0; i < count; i++)
             {
