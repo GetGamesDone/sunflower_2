@@ -12,6 +12,7 @@ namespace VirtueSky.ControlPanel.Editor
     {
         private static bool isShowInstallRemoteConfig = true;
         private static bool isShowInstallAnalytic = true;
+        private static bool isShowInstallStorage = true;
         private static bool isShowInstallFirestore = true;
         private static Vector2 scroll = Vector2.zero;
         private static bool isCustomPackageName;
@@ -49,6 +50,12 @@ namespace VirtueSky.ControlPanel.Editor
                 MessageType.Info);
 #endif
             CPUtility.DrawButtonAddDefineSymbols(ConstantDefineSymbols.VIRTUESKY_FIREBASE_ANALYTIC);
+#if !VIRTUESKY_FIREBASE_STORAGE
+            EditorGUILayout.HelpBox(
+                $"Add scripting define symbols: {ConstantDefineSymbols.VIRTUESKY_FIREBASE_STORAGE} for Firebase Storage to use",
+                MessageType.Info);
+#endif
+            CPUtility.DrawButtonAddDefineSymbols(ConstantDefineSymbols.VIRTUESKY_FIREBASE_STORAGE);
 #if !VIRTUESKY_FIREBASE_FIRESTORE
             EditorGUILayout.HelpBox(
                 $"Add scripting define symbols: {ConstantDefineSymbols.VIRTUESKY_FIREBASE_FIRESTORE} for Firebase Firestore to use",
@@ -154,6 +161,12 @@ namespace VirtueSky.ControlPanel.Editor
                 GUILayout.Space(10);
             }
 
+            isShowInstallStorage = GUILayout.Toggle(isShowInstallStorage, "Install Firebase Storage And Dependency");
+            GUILayout.Space(10);
+            if (isShowInstallStorage)
+            {
+                CPUtility.DrawButtonInstallPackage("Install Firebase Storage", "Remove Firebase Storage",
+                    ConstantPackage.PackageNameFirebaseStorage, ConstantPackage.MaxVersionFirebaseStorage);
             GUILayout.Space(10);
 
             isShowInstallFirestore =

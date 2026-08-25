@@ -71,6 +71,11 @@
         public const string MaxVersionFirebaseAuth =
             "https://github.com/RageAgainstThePixel/com.google.firebase.auth.git#13.11.0";
 
+        public const string PackageNameFirebaseStorage = "com.google.firebase.storage";
+
+        public const string MaxVersionFirebaseStorage =
+            "https://github.com/RageAgainstThePixel/com.google.firebase.storage.git#13.11.0";
+
         public const string PackageNameFirebaseCrashlytics = "com.google.firebase.crashlytics";
 
         public const string MaxVersionFirebaseCrashlytics =
