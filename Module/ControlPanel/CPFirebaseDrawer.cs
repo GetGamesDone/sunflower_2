@@ -167,7 +167,14 @@ namespace VirtueSky.ControlPanel.Editor
             {
                 CPUtility.DrawButtonInstallPackage("Install Firebase Storage", "Remove Firebase Storage",
                     ConstantPackage.PackageNameFirebaseStorage, ConstantPackage.MaxVersionFirebaseStorage);
-            GUILayout.Space(10);
+                CPUtility.DrawButtonInstallPackage("Install Firebase App", "Remove Firebase App",
+                    ConstantPackage.PackageNameFirebaseApp, ConstantPackage.MaxVersionFirebaseApp);
+                CPUtility.DrawButtonInstallPackage("Install Google External Dependency Manager",
+                    "Remove Google External Dependency Manager",
+                    ConstantPackage.PackageNameGGExternalDependencyManager,
+                    ConstantPackage.MaxVersionGGExternalDependencyManager);
+                GUILayout.Space(10);
+            }
 
             isShowInstallFirestore =
                 GUILayout.Toggle(isShowInstallFirestore, "Install Firebase Firestore And Dependency");
