@@ -12,6 +12,7 @@ namespace VirtueSky.UtilsEditor
         public const string VIRTUESKY_FIREBASE = "VIRTUESKY_FIREBASE";
         public const string VIRTUESKY_FIREBASE_STORAGE = "VIRTUESKY_FIREBASE_STORAGE";
         public const string VIRTUESKY_FIREBASE_FIRESTORE = "VIRTUESKY_FIREBASE_FIRESTORE";
+        public const string VIRTUESKY_FIREBASE_AUTH = "VIRTUESKY_FIREBASE_AUTH";
         public const string VIRTUESKY_IAP = "VIRTUESKY_IAP";
         public const string VIRTUESKY_RATING = "VIRTUESKY_RATING";
         public const string VIRTUESKY_NOTIFICATION = "VIRTUESKY_NOTIFICATION";

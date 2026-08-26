@@ -14,6 +14,7 @@ namespace VirtueSky.ControlPanel.Editor
         private static bool isShowInstallAnalytic = true;
         private static bool isShowInstallStorage = true;
         private static bool isShowInstallFirestore = true;
+        private static bool isShowInstallAuth = true;
         private static Vector2 scroll = Vector2.zero;
         private static bool isCustomPackageName;
         private static string packageName;
@@ -62,6 +63,12 @@ namespace VirtueSky.ControlPanel.Editor
                 MessageType.Info);
 #endif
             CPUtility.DrawButtonAddDefineSymbols(ConstantDefineSymbols.VIRTUESKY_FIREBASE_FIRESTORE);
+#if !VIRTUESKY_FIREBASE_AUTH
+            EditorGUILayout.HelpBox(
+                $"Add scripting define symbols: {ConstantDefineSymbols.VIRTUESKY_FIREBASE_AUTH} for Firebase Auth to use",
+                MessageType.Info);
+#endif
+            CPUtility.DrawButtonAddDefineSymbols(ConstantDefineSymbols.VIRTUESKY_FIREBASE_AUTH);
             GUILayout.Space(10);
             DrawTracking();
 #if UNITY_ANDROID
@@ -183,6 +190,21 @@ namespace VirtueSky.ControlPanel.Editor
             {
                 CPUtility.DrawButtonInstallPackage("Install Firebase Firestore", "Remove Firebase Firestore",
                     ConstantPackage.PackageNameFirebaseFirestore, ConstantPackage.MaxVersionFirebaseFirestore);
+                CPUtility.DrawButtonInstallPackage("Install Firebase App", "Remove Firebase App",
+                    ConstantPackage.PackageNameFirebaseApp, ConstantPackage.MaxVersionFirebaseApp);
+                CPUtility.DrawButtonInstallPackage("Install Google External Dependency Manager",
+                    "Remove Google External Dependency Manager",
+                    ConstantPackage.PackageNameGGExternalDependencyManager,
+                    ConstantPackage.MaxVersionGGExternalDependencyManager);
+                GUILayout.Space(10);
+            }
+
+            isShowInstallAuth = GUILayout.Toggle(isShowInstallAuth, "Install Firebase Auth And Dependency");
+            GUILayout.Space(10);
+            if (isShowInstallAuth)
+            {
+                CPUtility.DrawButtonInstallPackage("Install Firebase Auth", "Remove Firebase Auth",
+                    ConstantPackage.PackageNameFirebaseAuth, ConstantPackage.MaxVersionFirebaseAuth);
                 CPUtility.DrawButtonInstallPackage("Install Firebase App", "Remove Firebase App",
                     ConstantPackage.PackageNameFirebaseApp, ConstantPackage.MaxVersionFirebaseApp);
                 CPUtility.DrawButtonInstallPackage("Install Google External Dependency Manager",

@@ -15,6 +15,12 @@
     "precompiledReferences": [],
     "autoReferenced": true,
     "defineConstraints": [],
-    "versionDefines": [],
+    "versionDefines": [
+        {
+            "name": "com.google.firebase.auth",
+            "expression": "",
+            "define": "VIRTUESKY_FIREBASE_AUTH"
+        }
+    ],
     "noEngineReferences": false
 }
