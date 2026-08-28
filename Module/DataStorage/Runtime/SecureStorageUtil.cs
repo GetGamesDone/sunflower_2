@@ -45,7 +45,14 @@ namespace VirtueSky.DataStorage
         }
 
         public void Clear() => PlayerPrefs.DeleteAll();
-        public void DeleteKey(string key) => PlayerPrefs.DeleteKey(key);
-        public bool ContainsKey(string key) => PlayerPrefs.HasKey(key);
+
+        // Values are stored under an encrypted, prefixed key (see PlayerPrefsUtility.SetEncrypted*),
+        // so existence and deletion have to look up that same transformed key - checking the raw key
+        // always misses, which silently made every GameDataSecure.HasKey return false in the editor.
+        public void DeleteKey(string key) => PlayerPrefs.DeleteKey(EncryptedKey(key));
+        public bool ContainsKey(string key) => PlayerPrefs.HasKey(EncryptedKey(key));
+
+        private static string EncryptedKey(string key) =>
+            PlayerPrefsUtility.KEY_PREFIX + SimpleEncryption.EncryptString(key);
     }
 }
